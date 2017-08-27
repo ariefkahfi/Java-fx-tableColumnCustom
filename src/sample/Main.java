@@ -105,6 +105,8 @@ public class Main extends Application {
         TableColumn<Person,String> colNama = new TableColumn<>("Nama");
         TableColumn<Person,Boolean> colBox = new TableColumn<>("Login Status");
 
+        TableColumn buttonTest = new TableColumn("Action");
+
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
 
 
@@ -132,6 +134,7 @@ public class Main extends Application {
         colNama.setEditable(true);
 
         colBox.setEditable(true);
+
 
 
         colBox.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Person, Boolean>, ObservableValue<Boolean>>() {
@@ -169,9 +172,29 @@ public class Main extends Application {
 
 
 
+        buttonTest.setCellFactory(new Callback<TableColumn, TableCell>() {
+            @Override
+            public TableCell call(TableColumn param) {
+                return new TableCell(){
+                    @Override
+                    protected void updateItem(Object item, boolean empty) {
+                        super.updateItem(item, empty);
+
+                        if(!empty){
+                            Button delete =new Button("Delete");
+                            delete.setOnAction(e->{
+                                System.err.println("Aku diklik");
+                            });
+                            setAlignment(Pos.CENTER);
+                            setGraphic(delete);
+                        }
+                    }
+                };
+            }
+        });
 
 
-        tableView.getColumns().addAll(colId,colNama,colBox);
+        tableView.getColumns().addAll(colId,colNama,colBox,buttonTest);
 
 
         /*list.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {

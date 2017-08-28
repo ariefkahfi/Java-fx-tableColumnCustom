@@ -6,8 +6,10 @@ import com.sun.javafx.jmx.MXNodeAlgorithm;
 import com.sun.javafx.jmx.MXNodeAlgorithmContext;
 import com.sun.javafx.sg.prism.NGNode;
 import javafx.application.Application;
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -27,6 +29,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import sample.model.Gender;
+import sample.model.Kategori;
 import sample.model.Person;
 
 import java.util.ArrayList;
@@ -104,13 +108,47 @@ public class Main extends Application {
         TableColumn<Person,Integer> colId = new TableColumn<>("ID");
         TableColumn<Person,String> colNama = new TableColumn<>("Nama");
         TableColumn<Person,Boolean> colBox = new TableColumn<>("Login Status");
-
         TableColumn buttonTest = new TableColumn("Action");
+        TableColumn<Person,Gender> colGender = new TableColumn<>("Gender");
+        TableColumn<Person,Kategori> colKat = new TableColumn<>("Kategori");
 
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
-
-
+        //colGender.setCellValueFactory(new PropertyValueFactory<>("gender"));
+        //colKat.setCellValueFactory(new PropertyValueFactory<>("kategori"));
         colNama.setCellValueFactory(new PropertyValueFactory<>("name"));
+
+
+        /*
+        Cara 1 untuk ChoiceBoxTableCell pada TableView JavaFx
+        colKat.setCellFactory(ChoiceBoxTableCell.forTableColumn(Kategori.Anak,Kategori.Remaja,Kategori.Dewasa));
+        colKat.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<Person, Kategori>>() {
+            @Override
+            public void handle(TableColumn.CellEditEvent<Person, Kategori> event) {
+                Person p = event.getRowValue();
+
+                p.setKategori(event.getNewValue());
+            }
+        });*/
+
+        colKat.setCellFactory(ChoiceBoxTableCell.forTableColumn(Kategori.Anak,Kategori.Remaja,Kategori.Dewasa));
+        colKat.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Person, Kategori>, ObservableValue<Kategori>>() {
+            @Override
+            public ObservableValue<Kategori> call(TableColumn.CellDataFeatures<Person, Kategori> param) {
+                Person p = param.getValue();
+
+                SimpleObjectProperty<Kategori> k = new SimpleObjectProperty<>(p.getKategori());
+                k.addListener(new ChangeListener<Kategori>() {
+                    @Override
+                    public void changed(ObservableValue<? extends Kategori> observable, Kategori oldValue, Kategori newValue) {
+                        p.setKategori(newValue);
+                    }
+                });
+                return k;
+            }
+        });
+
+
+
 
         colNama.setCellFactory(TextFieldTableCell.forTableColumn());
 
@@ -123,8 +161,8 @@ public class Main extends Application {
 
                 p.setName(newValue);
 
-                System.err.println(p.toString());
-                System.err.println(newValue);
+                //System.err.println(p.toString());
+                //System.err.println(newValue);
 
             }
         });
@@ -135,6 +173,26 @@ public class Main extends Application {
 
         colBox.setEditable(true);
 
+        tableView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Person>() {
+            @Override
+            public void changed(ObservableValue<? extends Person> observable, Person oldValue, Person newValue) {
+                Person p = observable.getValue();
+
+                System.err.println(p.toString());
+
+            }
+        });
+
+
+        /*colBox.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<Person, Boolean>>() {
+            @Override
+            public void handle(TableColumn.CellEditEvent<Person, Boolean> event) {
+                Person p = event.getRowValue();
+
+                p.setStatus(event.getNewValue());
+
+            }
+        });*/
 
 
         colBox.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Person, Boolean>, ObservableValue<Boolean>>() {
@@ -152,6 +210,50 @@ public class Main extends Application {
                 return b;
             }
         });
+
+        /*
+        untuk Cell yang jadi ChoiceBoxTableCell
+        onEditCommit newValuenya tidak di update nilainya
+        jadi kita pakai setCelLValueFactory dengan nilai return
+        Objek dari javax.beans.property kelas
+
+        colGender.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<Person, Gender>>() {
+            @Override
+            public void handle(TableColumn.CellEditEvent<Person, Gender> event) {
+                Person  p  = event.getRowValue();
+
+
+                p.setGender(event.getNewValue());
+
+            }
+        });*/
+
+
+
+        colGender.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Person, Gender>, ObservableValue<Gender>>() {
+            @Override
+            public ObservableValue<Gender> call(TableColumn.CellDataFeatures<Person, Gender> param) {
+
+                SimpleObjectProperty<Gender> g = new SimpleObjectProperty<>(param.getValue().getGender());
+                g.addListener(new ChangeListener<Gender>() {
+                    @Override
+                    public void changed(ObservableValue<? extends Gender> observable, Gender oldValue, Gender newValue) {
+                        param.getValue().setGender(newValue);
+                    }
+                });
+                return g;
+            }
+        });
+
+        colGender.setCellFactory(new Callback<TableColumn<Person, Gender>, TableCell<Person, Gender>>() {
+            @Override
+            public TableCell<Person, Gender> call(TableColumn<Person, Gender> param) {
+                ComboBoxTableCell<Person,Gender> cBox = new ComboBoxTableCell<>(Gender.Male,Gender.Female);
+
+                return cBox;
+            }
+        });
+
         colBox.setCellFactory(new Callback<TableColumn<Person, Boolean>, TableCell<Person, Boolean>>() {
             @Override
             public TableCell<Person, Boolean> call(TableColumn<Person, Boolean> param) {
@@ -164,11 +266,12 @@ public class Main extends Application {
 
         List<Person> data = new ArrayList<>();
 
-        data.add(new Person(1,"Arief",true));
-        data.add(new Person(2,"Putro",false));
-        data.add(new Person(3,"Zack",false));
+        data.add(new Person(1,"Arief",true, Gender.Male, Kategori.Dewasa));
+        data.add(new Person(2,"Putro",false,Gender.Male,Kategori.Remaja));
+        data.add(new Person(3,"Zack",false,Gender.Female,Kategori.Anak));
 
         tableView.getItems().addAll(data);
+
 
 
 
@@ -194,7 +297,7 @@ public class Main extends Application {
         });
 
 
-        tableView.getColumns().addAll(colId,colNama,colBox,buttonTest);
+        tableView.getColumns().addAll(colId,colNama,colBox,buttonTest,colGender,colKat);
 
 
         /*list.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {

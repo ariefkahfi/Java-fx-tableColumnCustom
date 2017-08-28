@@ -13,7 +13,24 @@ public class Person {
     private int id;
     private String name;
     private Boolean status;
+    private Gender gender;
+    private Kategori kategori;
 
+    public Kategori getKategori() {
+        return kategori;
+    }
+
+    public void setKategori(Kategori kategori) {
+        this.kategori = kategori;
+    }
+
+    public Gender getGender() {
+        return gender;
+    }
+
+    public void setGender(Gender gender) {
+        this.gender = gender;
+    }
 
     public Person() {
     }
@@ -22,6 +39,21 @@ public class Person {
         this.id = id;
         this.name = name;
         this.status = status;
+    }
+
+    public Person(int id, String name, Boolean status, Gender gender) {
+        this.id = id;
+        this.name = name;
+        this.status = status;
+        this.gender = gender;
+    }
+
+    public Person(int id, String name, Boolean status, Gender gender, Kategori kategori) {
+        this.id = id;
+        this.name = name;
+        this.status = status;
+        this.gender = gender;
+        this.kategori = kategori;
     }
 
     public int getId() {
@@ -54,6 +86,8 @@ public class Person {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", status=" + status +
+                ", gender=" + gender +
+                ", kategori=" + kategori +
                 '}';
     }
 }
